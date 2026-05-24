@@ -1,5 +1,5 @@
 #![no_std]
-#![no_main]
+#![cfg_attr(not(test), no_main)]
 
 // Project Hliðskjálf - Type-1.5 Thin Hypervisor
 // Core Architecture: Intel VT-x
@@ -7,6 +7,7 @@
 
 pub mod vmx;
 
+#[cfg(not(test))]
 use core::panic::PanicInfo;
 use vmx::config::setup_vmcs;
 use vmx::init::enable_vmx;
