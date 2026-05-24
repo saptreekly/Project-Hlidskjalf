@@ -5,6 +5,8 @@
 // Core Architecture: Intel VT-x
 // Implementation: #![no_std] bare-metal Rust
 
+pub mod vmx;
+
 use core::arch::x86_64::__cpuid;
 use core::panic::PanicInfo;
 
