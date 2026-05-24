@@ -12,6 +12,9 @@ use vmx::init::enable_vmx;
 use vmx::vmlaunch::vmlaunch;
 
 #[cfg(not(any(test, feature = "fuzzing")))]
+use core::panic::PanicInfo;
+
+#[cfg(not(any(test, feature = "fuzzing")))]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
