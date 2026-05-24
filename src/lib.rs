@@ -7,6 +7,7 @@
 
 pub mod vmx;
 
+use core::panic::PanicInfo;
 use vmx::config::setup_vmcs;
 use vmx::init::enable_vmx;
 use vmx::vmlaunch::vmlaunch;
