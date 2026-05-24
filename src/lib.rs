@@ -1,4 +1,4 @@
-#![no_std]
+#![cfg_attr(not(any(test, fuzzing)), no_std)]
 #![cfg_attr(not(test), no_main)]
 
 // Project Hliðskjálf - Type-1.5 Thin Hypervisor
@@ -13,7 +13,7 @@ use vmx::config::setup_vmcs;
 use vmx::init::enable_vmx;
 use vmx::vmlaunch::vmlaunch;
 
-#[cfg(not(test))]
+#[cfg(not(any(test, fuzzing)))]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
