@@ -50,4 +50,4 @@ _vm_exit_wrapper:
     # 4. Resume Guest
     vmresume
     # If VMRESUME fails, we'd handle that here
-    jmp $ # Should not be reached
+    1: jmp 1b # Should not be reached
