@@ -28,3 +28,9 @@ impl<T> SyncWrapper<T> {
 
 pub static VMXON_REGION: SyncWrapper<VmxRegion> = SyncWrapper::new(VmxRegion::new());
 pub static VMCS_REGION: SyncWrapper<VmxRegion> = SyncWrapper::new(VmxRegion::new());
+
+// EPT Tables
+pub static EPT_PML4: SyncWrapper<VmxRegion> = SyncWrapper::new(VmxRegion::new());
+pub static EPT_PDPT: SyncWrapper<VmxRegion> = SyncWrapper::new(VmxRegion::new());
+pub static EPT_PD: SyncWrapper<VmxRegion> = SyncWrapper::new(VmxRegion::new());
+pub static EPT_PT: SyncWrapper<VmxRegion> = SyncWrapper::new(VmxRegion::new());
