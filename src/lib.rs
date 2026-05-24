@@ -16,15 +16,13 @@ fn panic(_info: &PanicInfo) -> ! {
 
 /// Verify if the CPU supports Intel VT-x (VMX)
 pub fn check_vmx_support() -> bool {
-    unsafe {
-        // CPUID leaf 1: Feature Information
-        let cpuid = __cpuid(1);
-        
-        // VMX is bit 5 of ECX
-        let vmx_bit = (cpuid.ecx >> 5) & 1;
-        
-        vmx_bit == 1
-    }
+    // CPUID leaf 1: Feature Information
+    let cpuid = __cpuid(1);
+    
+    // VMX is bit 5 of ECX
+    let vmx_bit = (cpuid.ecx >> 5) & 1;
+    
+    vmx_bit == 1
 }
 
 // Minimal Windows Driver Types
@@ -35,7 +33,7 @@ pub struct DriverObject([u8; 0]);
 pub struct UnicodeString([u8; 0]);
 
 /// Windows Kernel Driver Entry Point
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "system" fn DriverEntry(
     _driver_object: *mut DriverObject,
     _registry_path: *mut UnicodeString,
@@ -46,6 +44,6 @@ pub extern "system" fn DriverEntry(
         0
     } else {
         // STATUS_NOT_SUPPORTED
-        0xC00000BB
+        0xC00000BBu32 as i32
     }
 }
