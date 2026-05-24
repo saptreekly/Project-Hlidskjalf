@@ -30,6 +30,9 @@ jobs:
       uses: github/codeql-action/init@v3
       with:
         languages: ${{ matrix.language }}
+        # Use the 'security-extended' query suite for maximum coverage,
+        # including all default queries plus more intensive security checks.
+        queries: security-extended
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
