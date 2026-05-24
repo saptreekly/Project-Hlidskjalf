@@ -7,6 +7,7 @@
 
 pub mod vmx;
 
+use core::arch::x86_64::__cpuid;
 use vmx::config::setup_vmcs;
 use vmx::init::enable_vmx;
 use vmx::vmlaunch::vmlaunch;
@@ -18,6 +19,17 @@ use core::panic::PanicInfo;
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
+}
+
+/// Verify if the CPU supports Intel VT-x (VMX)
+pub fn check_vmx_support() -> bool {
+    // CPUID leaf 1: Feature Information
+    let cpuid = unsafe { __cpuid(1) };
+    
+    // VMX is bit 5 of ECX
+    let vmx_bit = (cpuid.ecx >> 5) & 1;
+    
+    vmx_bit == 1
 }
 
 // Minimal Windows Driver Types
