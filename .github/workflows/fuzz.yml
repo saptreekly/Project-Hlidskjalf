@@ -1,0 +1,23 @@
+name: Fuzzing
+
+on:
+  push:
+    branches: [ "testing/fuzzing" ]
+  pull_request:
+    branches: [ "testing/fuzzing" ]
+
+jobs:
+  fuzz:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Nightly Rust
+      uses: dtolnay/rust-toolchain@nightly
+
+    - name: Install cargo-fuzz
+      run: cargo install cargo-fuzz
+
+    - name: Run Fuzz Test
+      # Run for a limited time/iterations to check for immediate crashes
+      run: cargo fuzz run fuzz_target_1 -- -runs=10000
