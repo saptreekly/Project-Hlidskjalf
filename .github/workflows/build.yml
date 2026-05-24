@@ -29,5 +29,5 @@ jobs:
       run: cargo build --release --target x86_64-pc-windows-msvc
 
     - name: Unit Tests
-      # Run tests using the host (Windows) target
+      # Explicitly use default host target for tests to avoid WDK/linker issues
       run: cargo test
