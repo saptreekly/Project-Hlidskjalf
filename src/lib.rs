@@ -7,24 +7,14 @@
 
 pub mod vmx;
 
-use core::arch::x86_64::__cpuid;
 use core::panic::PanicInfo;
+use vmx::init::enable_vmx;
+use vmx::config::setup_vmcs;
 
 /// Panic handler for no_std
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
-}
-
-/// Verify if the CPU supports Intel VT-x (VMX)
-pub fn check_vmx_support() -> bool {
-    // CPUID leaf 1: Feature Information
-    let cpuid = __cpuid(1);
-    
-    // VMX is bit 5 of ECX
-    let vmx_bit = (cpuid.ecx >> 5) & 1;
-    
-    vmx_bit == 1
 }
 
 // Minimal Windows Driver Types
@@ -40,12 +30,17 @@ pub extern "system" fn DriverEntry(
     _driver_object: *mut DriverObject,
     _registry_path: *mut UnicodeString,
 ) -> i32 {
-    // 0 is STATUS_SUCCESS in Windows NTSTATUS
-    if check_vmx_support() {
-        // VT-x supported, proceed to initialize hypervisor
-        0
-    } else {
-        // STATUS_NOT_SUPPORTED
-        0xC00000BBu32 as i32
+    unsafe {
+        // 1. Enable VMX
+        if let Err(_) = enable_vmx() {
+            return 0xC00000BBu32 as i32; // STATUS_NOT_SUPPORTED
+        }
+
+        // 2. Configure VMCS
+        if let Err(_) = setup_vmcs() {
+            return 0xC00000BBu32 as i32; // STATUS_NOT_SUPPORTED
+        }
     }
+    
+    0 // STATUS_SUCCESS
 }
