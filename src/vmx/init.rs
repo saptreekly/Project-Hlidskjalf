@@ -88,4 +88,3 @@ pub unsafe fn vmptrld(vmcs_pa: u64) -> bool {
     }
     success != 0
 }
-
