@@ -7,9 +7,16 @@
 
 pub mod vmx;
 
+use core::panic::PanicInfo;
 use vmx::config::setup_vmcs;
 use vmx::init::enable_vmx;
 use vmx::vmlaunch::vmlaunch;
+
+#[cfg(not(test))]
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+    loop {}
+}
 
 // Minimal Windows Driver Types
 #[repr(C)]
