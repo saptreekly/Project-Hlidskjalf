@@ -27,18 +27,19 @@ pub struct UnicodeString([u8; 0]);
 
 /// Windows Kernel Driver Entry Point
 #[unsafe(no_mangle)]
+#[allow(unreachable_code)]
 pub extern "system" fn DriverEntry(
     _driver_object: *mut DriverObject,
     _registry_path: *mut UnicodeString,
 ) -> i32 {
     unsafe {
         // 1. Enable VMX
-        if let Err(_) = enable_vmx() {
+        if enable_vmx().is_err() {
             return 0xC00000BBu32 as i32; // STATUS_NOT_SUPPORTED
         }
 
         // 2. Configure VMCS
-        if let Err(_) = setup_vmcs() {
+        if setup_vmcs().is_err() {
             return 0xC00000BBu32 as i32; // STATUS_NOT_SUPPORTED
         }
 
@@ -48,3 +49,4 @@ pub extern "system" fn DriverEntry(
 
     0 // STATUS_SUCCESS
 }
+

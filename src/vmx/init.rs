@@ -4,6 +4,11 @@ use super::memory::VMXON_REGION;
 use core::arch::asm;
 
 /// Enables VMX operation in the CPU.
+///
+/// # Safety
+///
+/// Caller must ensure that the CPU is in a state capable of entering VMX mode,
+/// and that `VMXON_REGION` is correctly initialized.
 pub unsafe fn enable_vmx() -> Result<(), &'static str> {
     // 1. Enable VMX bit in CR4
     let mut cr4: u64;
@@ -31,6 +36,10 @@ pub unsafe fn enable_vmx() -> Result<(), &'static str> {
 
 /// Enters VMX Operation.
 /// The `region` must be a 4KB-aligned physical address of the VMXON region.
+///
+/// # Safety
+///
+/// Caller must ensure `region` points to a valid, 4KB-aligned VMXON region.
 pub unsafe fn vmxon(region: u64) -> bool {
     let success: u64;
     unsafe {
@@ -45,6 +54,10 @@ pub unsafe fn vmxon(region: u64) -> bool {
 }
 
 /// Leaves VMX Operation.
+///
+/// # Safety
+///
+/// Caller must be in VMX operation mode.
 pub unsafe fn vmxoff() -> bool {
     let success: u64;
     unsafe {
@@ -59,6 +72,10 @@ pub unsafe fn vmxoff() -> bool {
 
 /// Makes the VMCS at the given physical address current.
 /// The `vmcs_pa` must be 4KB-aligned.
+///
+/// # Safety
+///
+/// Caller must ensure `vmcs_pa` points to a valid, 4KB-aligned VMCS region.
 pub unsafe fn vmptrld(vmcs_pa: u64) -> bool {
     let success: u64;
     unsafe {
@@ -71,3 +88,4 @@ pub unsafe fn vmptrld(vmcs_pa: u64) -> bool {
     }
     success != 0
 }
+

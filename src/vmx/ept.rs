@@ -8,6 +8,12 @@ pub struct EptTable {
     pub entries: [u64; 512],
 }
 
+impl Default for EptTable {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl EptTable {
     pub const fn new() -> Self {
         Self { entries: [0; 512] }
@@ -16,7 +22,7 @@ impl EptTable {
 
 /// EPT Pointer (EPTP) structure
 #[repr(C)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 pub struct EptPointer {
     pub eptp: u64,
 }
@@ -29,6 +35,12 @@ impl EptPointer {
     }
 }
 
+/// Identity maps EPT tables.
+///
+/// # Safety
+///
+/// Caller must ensure that the EPT tables (PML4, PDPT, PD, PT) 
+/// are correctly initialized in memory and accessible.
 pub unsafe fn identity_map_ept() {
     let pml4 = unsafe { &mut *(EPT_PML4.get() as *mut EptTable) };
     let pdpt = unsafe { &mut *(EPT_PDPT.get() as *mut EptTable) };
@@ -46,7 +58,6 @@ pub unsafe fn identity_map_ept() {
         pt.entries[i] = ((i as u64) * 0x1000) | 0x7; // 4KB pages
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;

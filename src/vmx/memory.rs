@@ -5,6 +5,12 @@ use core::cell::UnsafeCell;
 #[allow(dead_code)]
 pub struct VmxRegion([u8; 4096]);
 
+impl Default for VmxRegion {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl VmxRegion {
     pub const fn new() -> Self {
         Self([0; 4096])
