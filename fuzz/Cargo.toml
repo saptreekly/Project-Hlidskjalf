@@ -1,8 +1,8 @@
 [package]
 name = "hlidskjalf-fuzz"
 version = "0.0.0"
+edition = "2021"
 publish = false
-edition = "2024"
 
 [package.metadata]
 cargo-fuzz = true
@@ -16,6 +16,10 @@ path = ".."
 [[bin]]
 name = "fuzz_target_1"
 path = "fuzz_targets/fuzz_target_1.rs"
-test = false
-doc = false
-bench = false
+
+[profile.release]
+debug = 1
+panic = "abort"
+
+[profile.dev]
+panic = "abort"
