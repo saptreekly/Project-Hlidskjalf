@@ -12,7 +12,7 @@ pub unsafe fn vmlaunch() -> ! {
     unsafe {
         asm!(
             "vmlaunch",
-            "1: jmp 1b", // If VMLAUNCH succeeds, this line is not reached (VM entry occurs)
+            "2: jmp 2b", // If VMLAUNCH succeeds, this line is not reached (VM entry occurs)
             options(noreturn)
         );
     }
