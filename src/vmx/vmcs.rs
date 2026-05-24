@@ -8,6 +8,7 @@ pub mod encoding {
     pub const GUEST_RSP: u32 = 0x0000681C;
     pub const HOST_RIP:  u32 = 0x00006C16;
     pub const HOST_RSP:  u32 = 0x00006C14;
+    pub const EPT_POINTER: u32 = 0x0000201A;
 }
 
 /// Read a field from the current VMCS
