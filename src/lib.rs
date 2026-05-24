@@ -24,11 +24,11 @@ fn panic(_info: &PanicInfo) -> ! {
 /// Verify if the CPU supports Intel VT-x (VMX)
 pub fn check_vmx_support() -> bool {
     // CPUID leaf 1: Feature Information
-    let cpuid = unsafe { __cpuid(1) };
-    
+    let cpuid = __cpuid(1);
+
     // VMX is bit 5 of ECX
     let vmx_bit = (cpuid.ecx >> 5) & 1;
-    
+
     vmx_bit == 1
 }
 
