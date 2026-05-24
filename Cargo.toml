@@ -1,3 +1,6 @@
+[workspace]
+members = [".", "fuzz"]
+
 [package]
 name = "hlidskjalf"
 version = "0.1.0"
