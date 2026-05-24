@@ -26,7 +26,8 @@ jobs:
       run: cargo clippy -- -D warnings
 
     - name: Build
-      run: cargo build --release
+      run: cargo build --release --target x86_64-pc-windows-msvc
 
     - name: Unit Tests
+      # Run tests using the host (Windows) target
       run: cargo test
