@@ -1,10 +1,10 @@
 // src/vmx/config.rs
 
-use core::arch::asm;
-use super::memory::{VMCS_REGION, EPT_PML4};
+use super::ept::{EptPointer, identity_map_ept};
 use super::init::vmptrld;
-use super::vmcs::{vmwrite, encoding};
-use super::ept::{identity_map_ept, EptPointer};
+use super::memory::{EPT_PML4, VMCS_REGION};
+use super::vmcs::{encoding, vmwrite};
+use core::arch::asm;
 
 /// Initializes the VMCS for the guest.
 pub unsafe fn setup_vmcs() -> Result<(), &'static str> {
@@ -22,7 +22,7 @@ pub unsafe fn setup_vmcs() -> Result<(), &'static str> {
     vmwrite(encoding::EPT_POINTER, eptp.eptp);
 
     // 3. Initialize critical guest state
-    // Note: In a real hypervisor, these would be captured from the 
+    // Note: In a real hypervisor, these would be captured from the
     // current context or the state we want the guest to boot in.
     vmwrite(encoding::GUEST_RIP, 0x00000000); // Placeholder
     vmwrite(encoding::GUEST_RSP, 0x00000000); // Placeholder

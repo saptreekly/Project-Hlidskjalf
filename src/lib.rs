@@ -8,8 +8,8 @@
 pub mod vmx;
 
 use core::panic::PanicInfo;
-use vmx::init::enable_vmx;
 use vmx::config::setup_vmcs;
+use vmx::init::enable_vmx;
 use vmx::vmlaunch::vmlaunch;
 
 /// Panic handler for no_std
@@ -45,6 +45,6 @@ pub extern "system" fn DriverEntry(
         // 3. Launch VM
         vmlaunch();
     }
-    
+
     0 // STATUS_SUCCESS
 }
