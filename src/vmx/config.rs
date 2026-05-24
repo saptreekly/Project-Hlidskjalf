@@ -1,5 +1,6 @@
 // src/vmx/config.rs
 
+use core::arch::asm;
 use super::memory::{VMCS_REGION, EPT_PML4};
 use super::init::vmptrld;
 use super::vmcs::{vmwrite, encoding};
@@ -28,8 +29,13 @@ pub unsafe fn setup_vmcs() -> Result<(), &'static str> {
 
     // 4. Initialize critical host state
     // We need to point the CPU to our host entry point and stack when a VM exit occurs.
-    // vmwrite(encoding::HOST_RIP, host_entry_point as u64);
-    // vmwrite(encoding::HOST_RSP, host_stack_pointer as u64);
+    let mut cr3: u64;
+    unsafe { asm!("mov {}, cr3", out(reg) cr3) };
+    vmwrite(encoding::HOST_CR3, cr3);
+
+    // Placeholder: Need to capture current RIP and RSP to return to
+    vmwrite(encoding::HOST_RIP, 0x00000000); // Should be a label in our assembly
+    vmwrite(encoding::HOST_RSP, 0x00000000); // Should be the host stack
 
     Ok(())
 }
