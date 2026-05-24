@@ -1,7 +1,7 @@
 // src/vmx/init.rs
 
-use core::arch::asm;
 use super::memory::VMXON_REGION;
+use core::arch::asm;
 
 /// Enables VMX operation in the CPU.
 pub unsafe fn enable_vmx() -> Result<(), &'static str> {
@@ -15,7 +15,7 @@ pub unsafe fn enable_vmx() -> Result<(), &'static str> {
 
     // 2. Get the physical address of the VMXON region
     // In a real kernel, we would need to get the actual physical address
-    // via a platform-specific API. For this prototype, we'll assume the 
+    // via a platform-specific API. For this prototype, we'll assume the
     // virtual address is identity-mapped or manageable as a physical address.
     let pa = VMXON_REGION.get() as u64;
 

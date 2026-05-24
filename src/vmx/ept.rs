@@ -1,6 +1,6 @@
 // src/vmx/ept.rs
 
-use super::memory::{EPT_PML4, EPT_PDPT, EPT_PD, EPT_PT};
+use super::memory::{EPT_PD, EPT_PDPT, EPT_PML4, EPT_PT};
 
 #[repr(C, align(4096))]
 #[derive(Clone, Copy)]
@@ -37,7 +37,7 @@ pub unsafe fn identity_map_ept() {
 
     // Identity map: Read + Write + Execute (Bits 0-2 = 7)
     // Entry points to physical address of next table/page
-    
+
     pml4.entries[0] = (EPT_PDPT.get() as u64) | 0x7;
     pdpt.entries[0] = (EPT_PD.get() as u64) | 0x7;
     pd.entries[0] = (EPT_PT.get() as u64) | 0x7;
