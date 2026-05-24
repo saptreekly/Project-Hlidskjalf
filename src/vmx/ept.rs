@@ -46,3 +46,18 @@ pub unsafe fn identity_map_ept() {
         pt.entries[i] = ((i as u64) * 0x1000) | 0x7; // 4KB pages
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_eptp_creation() {
+        // Test EPTP with a 4KB aligned physical address 0x1000
+        // Expect (0x1000 & 0xFFFFFFFFFF000) | (3 << 3) | 6
+        // = 0x1000 | 24 | 6 = 0x101E
+        let pml4_pa = 0x1000;
+        let eptp = EptPointer::new(pml4_pa);
+        assert_eq!(eptp.eptp, 0x101E);
+    }
+}

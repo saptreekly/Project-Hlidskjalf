@@ -17,6 +17,16 @@ jobs:
       with:
         toolchain: stable
         targets: x86_64-pc-windows-msvc
+        components: rustfmt, clippy
+
+    - name: Format Check
+      run: cargo fmt --all -- --check
+
+    - name: Lint Check
+      run: cargo clippy -- -D warnings
 
     - name: Build
       run: cargo build --release
+
+    - name: Unit Tests
+      run: cargo test
