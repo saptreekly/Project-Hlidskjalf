@@ -10,6 +10,7 @@ pub mod vmx;
 use core::panic::PanicInfo;
 use vmx::init::enable_vmx;
 use vmx::config::setup_vmcs;
+use vmx::vmlaunch::vmlaunch;
 
 /// Panic handler for no_std
 #[panic_handler]
@@ -40,6 +41,9 @@ pub extern "system" fn DriverEntry(
         if let Err(_) = setup_vmcs() {
             return 0xC00000BBu32 as i32; // STATUS_NOT_SUPPORTED
         }
+
+        // 3. Launch VM
+        vmlaunch();
     }
     
     0 // STATUS_SUCCESS
