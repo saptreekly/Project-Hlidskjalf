@@ -6,9 +6,10 @@ use core::arch::asm;
 pub mod encoding {
     pub const GUEST_RIP: u32 = 0x0000681E;
     pub const GUEST_RSP: u32 = 0x0000681C;
-    pub const HOST_RIP:  u32 = 0x00006C16;
-    pub const HOST_RSP:  u32 = 0x00006C14;
     pub const EPT_POINTER: u32 = 0x0000201A;
+    pub const HOST_CR3: u32 = 0x00006C02;
+    pub const HOST_RIP: u32 = 0x00006C16;
+    pub const HOST_RSP: u32 = 0x00006C14;
 }
 
 /// Read a field from the current VMCS
