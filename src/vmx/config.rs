@@ -1,12 +1,17 @@
 // src/vmx/config.rs
 
+use core::arch::asm;
 use super::ept::{EptPointer, identity_map_ept};
 use super::init::vmptrld;
 use super::memory::{EPT_PML4, VMCS_REGION};
 use super::vmcs::{encoding, vmwrite};
-use core::arch::asm;
 
 /// Initializes the VMCS for the guest.
+///
+/// # Safety
+///
+/// Caller must ensure that `VMCS_REGION` and `EPT` paging structures are initialized
+/// and that the CPU is in a valid state to configure the VMCS.
 pub unsafe fn setup_vmcs() -> Result<(), &'static str> {
     // 1. Load the VMCS
     let vmcs_pa = VMCS_REGION.get() as u64;
