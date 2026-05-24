@@ -49,4 +49,3 @@ pub extern "system" fn DriverEntry(
 
     0 // STATUS_SUCCESS
 }
-

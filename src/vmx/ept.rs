@@ -39,7 +39,7 @@ impl EptPointer {
 ///
 /// # Safety
 ///
-/// Caller must ensure that the EPT tables (PML4, PDPT, PD, PT) 
+/// Caller must ensure that the EPT tables (PML4, PDPT, PD, PT)
 /// are correctly initialized in memory and accessible.
 pub unsafe fn identity_map_ept() {
     let pml4 = unsafe { &mut *(EPT_PML4.get() as *mut EptTable) };

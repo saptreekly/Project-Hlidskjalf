@@ -1,10 +1,10 @@
 // src/vmx/config.rs
 
-use core::arch::asm;
 use super::ept::{EptPointer, identity_map_ept};
 use super::init::vmptrld;
 use super::memory::{EPT_PML4, VMCS_REGION};
 use super::vmcs::{encoding, vmwrite};
+use core::arch::asm;
 
 /// Initializes the VMCS for the guest.
 ///
