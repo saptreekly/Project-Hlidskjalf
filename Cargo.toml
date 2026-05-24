@@ -16,3 +16,6 @@ panic = "abort"
 panic = "abort"
 
 [dependencies]
+
+[features]
+fuzzing = []
