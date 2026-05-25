@@ -111,19 +111,45 @@ pub unsafe fn identity_map_ept() {
 
 When a policy violation occurs (e.g., malware attempting to modify write-protected page-table configurations), the CPU blocks the operation and triggers a hardware-level trap context. Control jumps directly to our raw assembly wrapper, preserving the exact state of the guest register boundary before calling the Rust decision engine:
 
-```x86asm
+```asm
 _vm_exit_wrapper:
     # 1. Atomic save of all Guest General Purpose Registers
-    push rax; push rcx; push rdx; push rbx; push rbp; push rsi; push rdi
-    push r8; push r9; push r10; push r11; push r12; push r13; push r14; push r15
+    push rax
+    push rcx
+    push rdx
+    push rbx
+    push rbp
+    push rsi
+    push rdi
+    push r8
+    push r9
+    push r10
+    push r11
+    push r12
+    push r13
+    push r14
+    push r15
 
     # 2. Pass GuestContext pointer as first argument (RDI) to the Rust engine
-    mov rdi, rsp
+    mov  rdi, rsp
     call vm_exit_handler_rust
 
     # 3. Restore intact guest registers
-    pop r15; pop r14; pop r13; pop r12; pop r11; pop r10; pop r9; pop r8
-    pop rdi; pop rsi; pop rbp; pop rbx; pop rdx; pop rcx; pop rax
+    pop  r15
+    pop  r14
+    pop  r13
+    pop  r12
+    pop  r11
+    pop  r10
+    pop  r9
+    pop  r8
+    pop  rdi
+    pop  rsi
+    pop  rbp
+    pop  rbx
+    pop  rdx
+    pop  rcx
+    pop  rax
 
     # 4. Re-enter the virtualized realm
     vmresume
