@@ -1,6 +1,6 @@
 // src/vmx/ept.rs
 
-use super::memory::{EPT_PD, EPT_PDPT, EPT_PML4, EPT_PT};
+use super::memory::{EPT_PD, EPT_PDPT, EPT_PML4};
 
 #[repr(C, align(4096))]
 #[derive(Clone, Copy)]
@@ -35,27 +35,38 @@ impl EptPointer {
     }
 }
 
-/// Identity maps EPT tables.
+/// Identity maps EPT tables using 2MB Large Pages.
 ///
 /// # Safety
 ///
-/// Caller must ensure that the EPT tables (PML4, PDPT, PD, PT)
+/// Caller must ensure that the EPT tables (PML4, PDPT, PD)
 /// are correctly initialized in memory and accessible.
 pub unsafe fn identity_map_ept() {
     let pml4 = unsafe { &mut *(EPT_PML4.get() as *mut EptTable) };
     let pdpt = unsafe { &mut *(EPT_PDPT.get() as *mut EptTable) };
     let pd = unsafe { &mut *(EPT_PD.get() as *mut EptTable) };
-    let pt = unsafe { &mut *(EPT_PT.get() as *mut EptTable) };
 
-    // Identity map: Read + Write + Execute (Bits 0-2 = 7)
-    // Entry points to physical address of next table/page
+    // Clear tables
+    pml4.entries.fill(0);
+    pdpt.entries.fill(0);
+    pd.entries.fill(0);
 
-    pml4.entries[0] = (EPT_PDPT.get() as u64) | 0x7;
-    pdpt.entries[0] = (EPT_PD.get() as u64) | 0x7;
-    pd.entries[0] = (EPT_PT.get() as u64) | 0x7;
-
+    // Map the entire 4K physical address space (PML4->PDPT->PD)
+    // 512 PDPT entries (512 * 512GB = 256TB total address space)
     for i in 0..512 {
-        pt.entries[i] = ((i as u64) * 0x1000) | 0x7; // 4KB pages
+        let pdpt_pa = (EPT_PDPT.get() as u64) + (i * 4096);
+        pml4.entries[i as usize] = pdpt_pa | 0x7;
+
+        for j in 0..512 {
+            let pd_pa = (EPT_PD.get() as u64) + ((i * 512 + j) * 4096);
+            pdpt.entries[j as usize] = pd_pa | 0x7;
+
+            for k in 0..512 {
+                // Large Page bit (bit 7) set for 2MB pages
+                let physical_addr = (i * 512 * 512 + j * 512 + k) * 2 * 1024 * 1024;
+                pd.entries[k as usize] = physical_addr | 0x87; // 0x80 (Large Page) | 0x7 (R/W/X)
+            }
+        }
     }
 }
 #[cfg(test)]

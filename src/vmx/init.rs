@@ -3,6 +3,11 @@
 use super::memory::VMXON_REGION;
 use core::arch::asm;
 
+// Declare the Windows Kernel function signature
+unsafe extern "system" {
+    fn MmGetPhysicalAddress(BaseAddress: *mut core::ffi::c_void) -> u64;
+}
+
 /// Enables VMX operation in the CPU.
 ///
 /// # Safety
@@ -19,14 +24,12 @@ pub unsafe fn enable_vmx() -> Result<(), &'static str> {
     }
 
     // 2. Get the physical address of the VMXON region
-    // In a real kernel, we would need to get the actual physical address
-    // via a platform-specific API. For this prototype, we'll assume the
-    // virtual address is identity-mapped or manageable as a physical address.
-    let pa = VMXON_REGION.get() as u64;
+    let virtual_ptr = VMXON_REGION.get() as *mut core::ffi::c_void;
+    let physical_address = unsafe { MmGetPhysicalAddress(virtual_ptr) };
 
     // 3. Execute VMXON
     unsafe {
-        if !vmxon(pa) {
+        if !vmxon(physical_address) {
             return Err("VMXON failed");
         }
     }
