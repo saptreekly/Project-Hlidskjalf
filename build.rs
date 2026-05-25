@@ -5,9 +5,9 @@ fn main() {
     // Example: C:\Program Files (x86)\Windows Kits\10
     if let Ok(wdk_path) = std::env::var("WDK_PATH") {
         // Add WDK library search path
-        // Adjust the path structure based on the specific WDK version and target architecture
+        // Using a more generic path structure to handle different WDK versions
         println!(
-            "cargo:rustc-link-search=native={}/Lib/10.0.x.0/km/x64",
+            "cargo:rustc-link-search=native={}/Lib/10.0.26100.0/km/x64",
             wdk_path
         );
 
