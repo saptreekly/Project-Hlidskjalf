@@ -9,8 +9,8 @@ fn main() {
         // build the path dynamically or look for the first matching folder.
         // For now, let's assume standard structure and search recursively or
         // try a slightly more robust path if possible.
-        
-        // As a fallback to the previous failed path, try a slightly different 
+
+        // As a fallback to the previous failed path, try a slightly different
         // structure often found in WDK installations:
         let search_path = format!("{}/Lib/km/x64", wdk_path);
         println!("cargo:rustc-link-search=native={}", search_path);
