@@ -33,6 +33,8 @@ The codebase is strictly structured into highly decoupled modules separating low
     │   └── vmx/
     │       ├── mod.rs        # Submodule routing
     │       ├── init.rs       # VMXON initialization and CR4 manipulation
+    │       ├── msr.rs        # MSR constants and VMX capability helpers
+    │       ├── state.rs      # CPU state capture for guest/host VMCS fields
     │       ├── config.rs     # VMCS matrix building and host/guest setup
     │       ├── vmcs.rs       # Architecture-specific field encoding wrappers
     │       ├── ept.rs        # Multi-tiered identity page table mapping
@@ -87,71 +89,30 @@ pub unsafe fn enable_vmx() -> Result<(), &'static str> {
 
 ### Extended Page Table (EPT) Identity Mapping
 
-To guarantee the host OS remains oblivious to its virtual status, `ept.rs` implements a 1:1 identity map of physical memory. Memory protection attributes are enforced across 4KB pages:
+The hypervisor identity-maps the first **4 GB** of physical memory using **2 MB large pages**. Static footprint: 24 KB of page tables (1 PML4 + 1 PDPT + 4 PD pages).
 
 ```rust
 pub unsafe fn identity_map_ept() {
-    let pml4 = unsafe { &mut *(EPT_PML4.get() as *mut EptTable) };
-    let pdpt = unsafe { &mut *(EPT_PDPT.get() as *mut EptTable) };
-    let pd = unsafe { &mut *(EPT_PD.get() as *mut EptTable) };
-    let pt = unsafe { &mut *(EPT_PT.get() as *mut EptTable) };
-
-    // Set Read/Write/Execute bits (0x7) to ensure standard transparent execution
-    pml4.entries[0] = (EPT_PDPT.get() as u64) | 0x7;
-    pdpt.entries[0] = (EPT_PD.get() as u64) | 0x7;
-    pd.entries[0] = (EPT_PT.get() as u64) | 0x7;
-    
-    for i in 0..512 {
-        pt.entries[i] = ((i as u64) * 0x1000) | 0x7; // Maps physical space to identical guest views
-    }
+    // PML4[0] -> PDPT -> 4 PD pages (one per GB)
+    // Each PD entry is a 2 MB large page: physical | 0x87
 }
 ```
 
+Total static hypervisor memory (VMXON, VMCS, EPT, host stack) is capped at **~40 KB**.
+
 ### 4. Hardware Interception Loop (`VM-Exit`)
 
-When a policy violation occurs (e.g., malware attempting to modify write-protected page-table configurations), the CPU blocks the operation and triggers a hardware-level trap context. Control jumps directly to our raw assembly wrapper, preserving the exact state of the guest register boundary before calling the Rust decision engine:
+On VM-exit, control transfers to `vm_exit_wrapper` in `exit_asm.s`. The assembly saves GPRs, passes a `GuestContext` pointer in **RCX** (Windows x64 ABI), calls `vm_exit_handler_rust`, restores registers, and executes `vmresume`:
 
 ```asm
-_vm_exit_wrapper:
-    # 1. Atomic save of all Guest General Purpose Registers
+vm_exit_wrapper:
     push rax
-    push rcx
-    push rdx
-    push rbx
-    push rbp
-    push rsi
-    push rdi
-    push r8
-    push r9
-    push r10
-    push r11
-    push r12
-    push r13
-    push r14
-    push r15
-
-    # 2. Pass GuestContext pointer as first argument (RDI) to the Rust engine
-    mov  rdi, rsp
+    ; ... save remaining GPRs ...
+    mov rcx, rsp
+    sub rsp, 32
     call vm_exit_handler_rust
-
-    # 3. Restore intact guest registers
-    pop  r15
-    pop  r14
-    pop  r13
-    pop  r12
-    pop  r11
-    pop  r10
-    pop  r9
-    pop  r8
-    pop  rdi
-    pop  rsi
-    pop  rbp
-    pop  rbx
-    pop  rdx
-    pop  rcx
-    pop  rax
-
-    # 4. Re-enter the virtualized realm
+    add rsp, 32
+    ; ... restore GPRs ...
     vmresume
 ```
 
@@ -159,6 +120,6 @@ _vm_exit_wrapper:
 
 The infrastructure relies on strict, continuous evaluation policies verified inside isolated build spaces via GitHub Actions:
 
-- **Compiler Matrix Verification (`build.yml`):** Automatically targets the `x86_64-pc-windows-msvc` toolchain inside a native Windows runner environment, enforcing strict zero-warning compilation policies via Vlippy.
+- **Compiler Matrix Verification (`build.yml`):** Linux unit tests plus Windows `x86_64-pc-windows-msvc` release build with Clippy `-D warnings`.
 - **Static Analysis (`codeql.yml`):** Evaluates that unsafe Rust boundaries using automated semantic reasoning engines targeting extended security query sets.
 - **Fuzzing Harness (`fuzz.yml`):** Utilizes LLVM libFuzzer via `cargo-fuzz` to feed randomized simulation data into low-level capability verification blocks, verifying panic resistance across unusual CPU layout paths.

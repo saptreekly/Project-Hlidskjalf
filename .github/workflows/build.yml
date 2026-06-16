@@ -7,6 +7,25 @@ on:
     branches: [ "main" ]
 
 jobs:
+  linux-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt, clippy
+
+    - name: Format Check
+      run: cargo fmt --all -- --check
+
+    - name: Lint Check
+      run: cargo clippy --features fuzzing -- -D warnings
+
+    - name: Unit Tests
+      run: cargo test --lib
+
   build:
     runs-on: windows-latest
     steps:
@@ -23,7 +42,7 @@ jobs:
       run: cargo fmt --all -- --check
 
     - name: Lint Check
-      run: cargo clippy -- -D warnings
+      run: cargo clippy --target x86_64-pc-windows-msvc -- -D warnings
 
     - name: Build
       env:
@@ -31,5 +50,4 @@ jobs:
       run: cargo build --release --target x86_64-pc-windows-msvc
 
     - name: Unit Tests
-      # Explicitly use --lib to only test the rlib and avoid issues with cdylib in no_std
       run: cargo test --lib

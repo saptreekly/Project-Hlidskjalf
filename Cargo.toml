@@ -1,13 +1,10 @@
 [workspace]
 members = [".", "fuzz"]
 
-[package]
-name = "hlidskjalf"
-version = "0.1.0"
+[workspace.package]
 edition = "2024"
 
-[lib]
-crate-type = ["cdylib", "rlib"]
+[workspace.dependencies]
 
 [profile.dev]
 panic = "abort"
@@ -15,7 +12,18 @@ panic = "abort"
 [profile.release]
 panic = "abort"
 
+[package]
+name = "hlidskjalf"
+version = "0.1.0"
+edition.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
 [dependencies]
+
+[build-dependencies]
+cc = "1.2"
 
 [features]
 fuzzing = []

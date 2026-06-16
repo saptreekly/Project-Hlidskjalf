@@ -5,5 +5,7 @@ pub mod ept;
 pub mod exit;
 pub mod init;
 pub mod memory;
+pub mod msr;
+pub mod state;
 pub mod vmcs;
 pub mod vmlaunch;

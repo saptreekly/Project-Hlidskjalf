@@ -47,6 +47,9 @@ dependencies = [
 [[package]]
 name = "hlidskjalf"
 version = "0.1.0"
+dependencies = [
+ "cc",
+]
 
 [[package]]
 name = "hlidskjalf-fuzz"
