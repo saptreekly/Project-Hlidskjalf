@@ -1,19 +1,42 @@
 // src/vmx/vmlaunch.rs
 
+use super::vmcs::vm_instruction_error;
 use core::arch::asm;
 
-/// Executes the VMLAUNCH instruction to run the guest.
-/// Should only be called after VMCS is loaded and fully configured.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum VmxLaunchError {
+    VmlaunchFailed(u32),
+}
+
+/// Execute `VMLAUNCH`. On success, guest execution begins and this does not return.
 ///
 /// # Safety
 ///
-/// Caller must ensure that the VMCS is properly configured and loaded (via `vmptrld`).
-pub unsafe fn vmlaunch() -> ! {
+/// The current VMCS must be fully configured and loaded.
+pub unsafe fn vmlaunch() -> Result<(), VmxLaunchError> {
+    let failed: u64;
     unsafe {
         asm!(
             "vmlaunch",
-            "2: jmp 2b", // If VMLAUNCH succeeds, this line is not reached (VM entry occurs)
-            options(noreturn)
+            "setc {0:l}",
+            out(reg) failed,
         );
+    }
+
+    if failed != 0 {
+        return Err(VmxLaunchError::VmlaunchFailed(vm_instruction_error()));
+    }
+
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn launch_error_carries_instruction_error_code() {
+        let err = VmxLaunchError::VmlaunchFailed(7);
+        assert_eq!(err, VmxLaunchError::VmlaunchFailed(7));
     }
 }

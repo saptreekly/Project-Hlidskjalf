@@ -1,5 +1,8 @@
 // src/vmx/context.rs
 
+/// Guest GPR save area pushed by `exit_asm.s`.
+///
+/// Layout must match the push order in `exit_asm.s` exactly.
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct GuestContext {
@@ -7,7 +10,6 @@ pub struct GuestContext {
     pub rcx: u64,
     pub rdx: u64,
     pub rbx: u64,
-    pub rsp: u64,
     pub rbp: u64,
     pub rsi: u64,
     pub rdi: u64,
@@ -21,25 +23,17 @@ pub struct GuestContext {
     pub r15: u64,
 }
 
-impl GuestContext {
-    pub const fn new() -> Self {
-        Self {
-            rax: 0,
-            rcx: 0,
-            rdx: 0,
-            rbx: 0,
-            rsp: 0,
-            rbp: 0,
-            rsi: 0,
-            rdi: 0,
-            r8: 0,
-            r9: 0,
-            r10: 0,
-            r11: 0,
-            r12: 0,
-            r13: 0,
-            r14: 0,
-            r15: 0,
-        }
+pub const GUEST_CONTEXT_GPR_COUNT: usize = 15;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn context_matches_assembly_push_count() {
+        assert_eq!(
+            core::mem::size_of::<GuestContext>(),
+            GUEST_CONTEXT_GPR_COUNT * 8
+        );
     }
 }
