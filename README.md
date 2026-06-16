@@ -121,5 +121,6 @@ vm_exit_wrapper:
 The infrastructure relies on strict, continuous evaluation policies verified inside isolated build spaces via GitHub Actions:
 
 - **Compiler Matrix Verification (`build.yml`):** Linux unit tests plus Windows `x86_64-pc-windows-msvc` release build with Clippy `-D warnings`.
-- **Static Analysis (`codeql.yml`):** Evaluates that unsafe Rust boundaries using automated semantic reasoning engines targeting extended security query sets.
+- **Linux Simulation (`sim` feature):** Full hypervisor bring-up path tested on Linux without Windows or hardware — `cargo test --features sim`.
+- **Static Analysis (`codeql.yml`):** Evaluates unsafe Rust boundaries using automated semantic reasoning engines targeting extended security query sets.
 - **Fuzzing Harness (`fuzz.yml`):** Utilizes LLVM libFuzzer via `cargo-fuzz` to feed randomized simulation data into low-level capability verification blocks, verifying panic resistance across unusual CPU layout paths.

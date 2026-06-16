@@ -1,5 +1,6 @@
 // src/vmx/vmcs.rs
 
+#[cfg(not(feature = "sim"))]
 use core::arch::asm;
 
 pub mod encoding {
@@ -87,43 +88,57 @@ pub enum VmcsError {
 /// Read a field from the current VMCS.
 #[inline]
 pub fn vmread(field: u32) -> Result<u64, VmcsError> {
-    let value: u64;
-    let failed: u64;
-    unsafe {
-        asm!(
-            "vmread {1}, {0}",
-            "setc {2:l}",
-            in(reg) field as u64,
-            out(reg) value,
-            out(reg) failed,
-            options(nostack, preserves_flags),
-        );
+    #[cfg(feature = "sim")]
+    {
+        super::sim::vmread(field)
     }
-    if failed != 0 {
-        Err(VmcsError::VmreadFailed)
-    } else {
-        Ok(value)
+    #[cfg(not(feature = "sim"))]
+    {
+        let value: u64;
+        let failed: u64;
+        unsafe {
+            asm!(
+                "vmread {1}, {0}",
+                "setc {2:l}",
+                in(reg) field as u64,
+                out(reg) value,
+                out(reg) failed,
+                options(nostack, preserves_flags),
+            );
+        }
+        if failed != 0 {
+            Err(VmcsError::VmreadFailed)
+        } else {
+            Ok(value)
+        }
     }
 }
 
 /// Write a field to the current VMCS.
 #[inline]
 pub fn vmwrite(field: u32, value: u64) -> Result<(), VmcsError> {
-    let failed: u64;
-    unsafe {
-        asm!(
-            "vmwrite {1}, {0}",
-            "setc {2:l}",
-            in(reg) field as u64,
-            in(reg) value,
-            out(reg) failed,
-            options(nostack, preserves_flags),
-        );
+    #[cfg(feature = "sim")]
+    {
+        super::sim::vmwrite(field, value)
     }
-    if failed != 0 {
-        Err(VmcsError::VmwriteFailed)
-    } else {
-        Ok(())
+    #[cfg(not(feature = "sim"))]
+    {
+        let failed: u64;
+        unsafe {
+            asm!(
+                "vmwrite {1}, {0}",
+                "setc {2:l}",
+                in(reg) field as u64,
+                in(reg) value,
+                out(reg) failed,
+                options(nostack, preserves_flags),
+            );
+        }
+        if failed != 0 {
+            Err(VmcsError::VmwriteFailed)
+        } else {
+            Ok(())
+        }
     }
 }
 

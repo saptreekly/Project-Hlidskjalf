@@ -1,4 +1,4 @@
-#![cfg_attr(not(any(test, feature = "fuzzing")), no_std)]
+#![cfg_attr(not(any(test, feature = "fuzzing", feature = "sim")), no_std)]
 #![cfg_attr(not(test), no_main)]
 
 // Project Hliðskjálf - Type-1.5 Thin Hypervisor
@@ -7,19 +7,22 @@
 
 pub mod vmx;
 
+#[cfg(feature = "sim")]
+pub use vmx::sim;
+
 use core::arch::x86_64::__cpuid;
 use vmx::config::setup_vmcs;
 use vmx::init::enable_vmx;
 use vmx::vmlaunch::{VmxLaunchError, vmlaunch};
 
-#[cfg(not(any(test, feature = "fuzzing")))]
+#[cfg(not(any(test, feature = "fuzzing", feature = "sim")))]
 use core::panic::PanicInfo;
 
-const STATUS_SUCCESS: i32 = 0;
-const STATUS_NOT_SUPPORTED: i32 = 0xC000_00BB_u32 as i32;
-const STATUS_UNSUCCESSFUL: i32 = 0xC000_0001_u32 as i32;
+pub const STATUS_SUCCESS: i32 = 0;
+pub const STATUS_NOT_SUPPORTED: i32 = 0xC000_00BB_u32 as i32;
+pub const STATUS_UNSUCCESSFUL: i32 = 0xC000_0001_u32 as i32;
 
-#[cfg(not(any(test, feature = "fuzzing")))]
+#[cfg(not(any(test, feature = "fuzzing", feature = "sim")))]
 #[panic_handler]
 fn panic(_info: &PanicInfo) -> ! {
     loop {}
@@ -37,6 +40,10 @@ pub fn check_vmx_support_from_ecx(ecx: u32) -> bool {
 
 #[inline]
 fn read_cpuid_ecx(leaf: u32) -> u32 {
+    #[cfg(feature = "sim")]
+    if let Some(ecx) = vmx::sim::cpuid_ecx(leaf) {
+        return ecx;
+    }
     __cpuid(leaf).ecx
 }
 

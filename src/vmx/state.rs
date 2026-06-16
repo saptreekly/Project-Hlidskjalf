@@ -40,7 +40,17 @@ mod capture;
 #[cfg(windows)]
 pub use capture::capture_cpu_state;
 
-#[cfg(not(windows))]
+#[cfg(all(feature = "sim", not(windows)))]
+/// Returns synthetic CPU state from the Linux simulation backend.
+///
+/// # Safety
+///
+/// Must only be called while the simulation backend is initialized.
+pub unsafe fn capture_cpu_state() -> CpuState {
+    super::sim::cpu_state()
+}
+
+#[cfg(all(not(windows), not(feature = "sim")))]
 /// Stub for non-Windows builds. Must not be called on production paths.
 ///
 /// # Safety

@@ -1,3 +1,4 @@
+// src/vmx/msr.rs
 //! MSR constants and helpers for VMX bring-up.
 
 use core::arch::asm;
@@ -24,12 +25,21 @@ pub const VMX_PROCBASED_USE_SECONDARY: u64 = 1 << 31;
 pub const VMX_PROCBASED2_ENABLE_EPT: u64 = 1 << 1;
 
 /// Read a model-specific register.
-///
-/// # Safety
-///
-/// The MSR index must be valid on the current CPU.
 #[inline]
-pub unsafe fn rdmsr(msr: u32) -> u64 {
+pub fn rdmsr(msr: u32) -> u64 {
+    #[cfg(feature = "sim")]
+    {
+        super::sim::read_msr(msr)
+    }
+    #[cfg(not(feature = "sim"))]
+    {
+        rdmsr_hw(msr)
+    }
+}
+
+#[inline]
+#[cfg_attr(feature = "sim", allow(dead_code))]
+fn rdmsr_hw(msr: u32) -> u64 {
     let low: u32;
     let high: u32;
     unsafe {
@@ -81,23 +91,23 @@ pub fn adjust_vmx_control_values(current: u64, cap: u64) -> u64 {
 /// Adjust a control field using the VMX "true capability" MSR format.
 #[inline]
 pub fn adjust_vmx_control(current: u64, msr: u32) -> u64 {
-    let cap = unsafe { rdmsr(msr) };
+    let cap = rdmsr(msr);
     adjust_vmx_control_values(current, cap)
 }
 
 /// Apply Intel fixed CR0 bits required for VMX operation.
 #[inline]
 pub fn adjust_cr0_for_vmx(cr0: u64) -> u64 {
-    let fixed0 = unsafe { rdmsr(IA32_VMX_CR0_FIXED0) };
-    let fixed1 = unsafe { rdmsr(IA32_VMX_CR0_FIXED1) };
+    let fixed0 = rdmsr(IA32_VMX_CR0_FIXED0);
+    let fixed1 = rdmsr(IA32_VMX_CR0_FIXED1);
     (cr0 | fixed0) & fixed1
 }
 
 /// Apply Intel fixed CR4 bits required for VMX operation.
 #[inline]
 pub fn adjust_cr4_for_vmx(cr4: u64) -> u64 {
-    let fixed0 = unsafe { rdmsr(IA32_VMX_CR4_FIXED0) };
-    let fixed1 = unsafe { rdmsr(IA32_VMX_CR4_FIXED1) };
+    let fixed0 = rdmsr(IA32_VMX_CR4_FIXED0);
+    let fixed1 = rdmsr(IA32_VMX_CR4_FIXED1);
     (cr4 | fixed0) & fixed1
 }
 

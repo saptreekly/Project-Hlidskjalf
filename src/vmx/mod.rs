@@ -9,3 +9,6 @@ pub mod msr;
 pub mod state;
 pub mod vmcs;
 pub mod vmlaunch;
+
+#[cfg(feature = "sim")]
+pub mod sim;

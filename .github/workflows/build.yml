@@ -26,6 +26,9 @@ jobs:
     - name: Unit Tests
       run: cargo test --lib
 
+    - name: Linux Simulation Tests
+      run: cargo test --features sim
+
   build:
     runs-on: windows-latest
     steps:

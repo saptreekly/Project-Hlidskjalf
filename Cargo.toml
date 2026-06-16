@@ -27,3 +27,4 @@ cc = "1.2"
 
 [features]
 fuzzing = []
+sim = []

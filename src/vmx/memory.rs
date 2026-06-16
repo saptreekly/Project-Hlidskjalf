@@ -98,7 +98,7 @@ pub static EPT_PDPT: SyncWrapper<VmxRegion> = SyncWrapper::new(VmxRegion::new())
 pub static EPT_PD_PAGES: SyncWrapper<EptPdPages> = SyncWrapper::new(EptPdPages::new());
 pub static HOST_STACK: SyncWrapper<HostStack> = SyncWrapper::new(HostStack::new());
 
-#[cfg(not(any(test, feature = "fuzzing")))]
+#[cfg(not(any(test, feature = "fuzzing", feature = "sim")))]
 unsafe extern "system" {
     fn MmGetPhysicalAddress(BaseAddress: *mut core::ffi::c_void) -> u64;
 }
@@ -109,11 +109,11 @@ unsafe extern "system" {
 ///
 /// `ptr` must reference valid mapped memory.
 pub unsafe fn physical_address<T>(ptr: *mut T) -> u64 {
-    #[cfg(any(test, feature = "fuzzing"))]
+    #[cfg(any(test, feature = "fuzzing", feature = "sim"))]
     {
         ptr as u64
     }
-    #[cfg(not(any(test, feature = "fuzzing")))]
+    #[cfg(not(any(test, feature = "fuzzing", feature = "sim")))]
     {
         unsafe { MmGetPhysicalAddress(ptr.cast()) }
     }
