@@ -2,12 +2,6 @@
 
 use super::vmcs::{encoding, vmwrite};
 
-#[repr(C, packed)]
-pub(super) struct DescriptorTable {
-    limit: u16,
-    base: u64,
-}
-
 #[derive(Debug, Clone, Copy, Default)]
 pub struct SegmentState {
     pub selector: u16,
@@ -47,10 +41,16 @@ mod capture;
 pub use capture::capture_cpu_state;
 
 #[cfg(not(windows))]
+/// Stub for non-Windows builds. Must not be called on production paths.
+///
+/// # Safety
+///
+/// Caller must ensure this is never invoked outside test tooling.
 pub unsafe fn capture_cpu_state() -> CpuState {
     CpuState::default()
 }
 
+#[cfg(any(windows, test))]
 pub(super) fn segment_access_rights(selector: u16) -> u32 {
     if selector == 0 {
         return 1 << 16;
@@ -63,6 +63,7 @@ pub(super) fn segment_access_rights(selector: u16) -> u32 {
     rights
 }
 
+#[cfg(any(windows, test))]
 pub(super) fn flat_data_segment(selector: u16) -> SegmentState {
     SegmentState {
         selector,

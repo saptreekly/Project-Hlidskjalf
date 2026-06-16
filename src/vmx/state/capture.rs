@@ -1,8 +1,14 @@
 // src/vmx/state/capture.rs
 
-use super::{CpuState, DescriptorTable, SegmentState, flat_data_segment, segment_access_rights};
+use super::{CpuState, SegmentState, flat_data_segment, segment_access_rights};
 use crate::vmx::msr::{IA32_EFER, rdmsr};
 use core::arch::asm;
+
+#[repr(C, packed)]
+struct DescriptorTable {
+    limit: u16,
+    base: u64,
+}
 
 macro_rules! read_segment {
     ($seg:tt) => {{
@@ -16,6 +22,30 @@ macro_rules! read_segment {
         }
         selector
     }};
+}
+
+fn read_tr() -> u16 {
+    let selector: u16;
+    unsafe {
+        asm!(
+            "str {0:x}",
+            out(reg) selector,
+            options(nomem, nostack, preserves_flags),
+        );
+    }
+    selector
+}
+
+fn read_ldtr() -> u16 {
+    let selector: u16;
+    unsafe {
+        asm!(
+            "sldt {0:x}",
+            out(reg) selector,
+            options(nomem, nostack, preserves_flags),
+        );
+    }
+    selector
 }
 
 fn read_fs_base() -> u64 {
@@ -77,13 +107,13 @@ pub unsafe fn capture_cpu_state() -> CpuState {
         access_rights: segment_access_rights(read_segment!(gs)),
     };
     let tr = SegmentState {
-        selector: read_segment!(tr),
+        selector: read_tr(),
         base: 0,
         limit: 0x67,
         access_rights: 0x008B,
     };
     let ldtr = SegmentState {
-        selector: read_segment!(ldtr),
+        selector: read_ldtr(),
         base: 0,
         limit: 0,
         access_rights: 1 << 16,
