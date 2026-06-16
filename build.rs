@@ -10,10 +10,7 @@ fn main() {
 
     if let Ok(wdk_path) = std::env::var("WDK_PATH") {
         if let Some(search_path) = find_wdk_km_lib_path(&wdk_path) {
-            println!(
-                "cargo:rustc-link-search=native={}",
-                search_path.display()
-            );
+            println!("cargo:rustc-link-search=native={}", search_path.display());
             println!("cargo:rustc-link-lib=ntoskrnl");
             println!("cargo:rustc-link-lib=hal");
         } else {
