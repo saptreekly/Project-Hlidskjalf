@@ -8,7 +8,7 @@ use super::msr::{
 use core::arch::asm;
 
 #[cfg(windows)]
-extern "C" {
+unsafe extern "C" {
     fn vm_exit_wrapper();
 }
 
